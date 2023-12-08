@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>实时天气</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background-color: #e9eff4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .header-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        #cityInfo {
+            text-align: match-parent;
+            font-size: 50px;
+            font-weight: bold;
+            margin-right: 100px;
+            color: #1976D2;
+        }
+
+        #searchInput {
+            flex-grow: 0.05;
+            margin-right: 1000px;
+            width: 150px;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #1976D2;
+            border-radius: 5px;
+            outline: none;
+        }
+
+        #suggestionList {
+            display: block;
+            max-height: 200px;
+            overflow-y: auto;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            position: absolute;
+            z-index: 1;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        #suggestionList li {
+            cursor: pointer;
+            padding: 10px;
+            margin-bottom: 2px;
+            transition: background-color 0.3s ease;
+        }
+
+        #suggestionList li:hover {
+            background-color: #f0f0f0;
+        }
+
+        .weather-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .city-info-container {
+            width: 48%;
+            box-sizing: border-box;
+            color: #000000;
+        }
+
+        .time-info-container {
+            width: 48%;
+            box-sizing: border-box;
+            font-size: 14px;
+            color: #777;
+        }
+
+        .updateTime {
+            margin-left: 400px;
+        }
+
+        #weatherInfoContainer {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .weatherBlockContainer {
+            display: flex;
+            justify-content: space-between;
+            max-height: 100px;
+            margin: 0 0px; /* 添加左右间隙 */
+        }
+
+        .weatherBlock {
+            width: 100%;
+            margin-top: 0px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 2px 5px rgba(82, 38, 38, 0.56);
+            margin: 0 10px; /* 添加左右间隙 */
+            max-height: 491px;
+        }
+
+        .weatherIcon {
+            margin-left: 125px;
+            width: 80px;
+            height: 80px;
+
+        }
+
+        .detailItem {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            background-color: #f7f7f7;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            max-height: 500px;
+        }
+
+        .detailLabel,
+        .detailValue {
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .forecastInfoContainer {
+            width: 100%;
+            background-color: rgb(164, 162, 168);
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 2px 5px rgba(124, 76, 76, 0.1);
+            overflow-y: auto;
+            max-height: 470px;
+        }
+
+        #updateTime {
+            /* 其他样式... */
+        }
+
+        #cityName {
+            min-height: 52px;
+            /* 其他样式... */
+        }
+
+        .detailLabel {
+            font-weight: bold;
+            color: #333;
+            flex-basis: 40%;
+            margin-bottom: 10px;
+        }
+
+        .detailValue {
+            color: #666;
+            flex-basis: 40%;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+<div class="header-container">
+    <input type="text" id="searchInput" placeholder="输入城市名" oninput="handleInput()">
+    <div id="cityInfo">天气预报</div>
+</div>
+<ul id="suggestionList"></ul>
+
+<div class="weather-container">
+    <!-- 子容器1：包含 #cityInfo 和 #cityName -->
+    <div class="city-info-container">
+
+        <div id="cityName"></div>
+        <div class="weatherBlock" id="weatherInfo"></div>
+    </div>
+
+    <!-- 子容器2：包含 #updateTime、#weatherInfoContainer 和 #forecastInfo -->
+    <div class="time-info-container">
+
+        <p class="updateTime" id="updateTime"></p>
+        <div id="weatherInfoContainer">
+
+            <div class="forecastInfoContainer" id="forecastInfo"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        navigator.geolocation.getCurrentPosition(successCallback, errorCallback);
+    });
+
+    const cityNameElement = document.getElementById('cityName');
+    function successCallback(position) {
+        const latitude = position.coords.latitude;
+        const longitude = position.coords.longitude;
+        console.log("Latitude: " + latitude);
+        console.log("Longitude: " + longitude);
+        fetchLocalityWeatherData(latitude, longitude);
+    }
+
+    function errorCallback(error) {
+        console.log("无法定位，默认北京天气", error.message);
+        fetchLocalityWeatherData(39.904987, 116.405289);
+    }
+
+    function fetchLocalityWeatherData(latitude, longitude) {
+        fetch('http://localhost:8080/api/locality', {
+            headers: {
+                'Accept': 'application/json',
+                'latitude': latitude,
+                'longitude': longitude,
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                updateWeatherInfo(data);
+                cityNameElement.innerText = '当前 : ' + data.cityName ;
+            })
+            .catch(error => console.error('获取天气数据失败:', error));
+    }
+
+    function fetchOtheWeatherData(Location_ID) {
+        fetch('http://localhost:8080/api/othen', {
+            headers: {
+                'Accept': 'application/json',
+                'Location_ID': Location_ID,
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                updateWeatherInfo(data);
+
+
+            })
+            .catch(error => console.error('获取天气数据失败:', error));
+    }
+
+    function updateWeatherInfo(data) {
+        var weatherInfoContainer = document.getElementById('weatherInfo');
+        var updateTimeElement = document.getElementById('updateTime');
+
+        updateTimeElement.innerText = '最近更新时间：' + data.now.obsTime;
+
+        weatherInfoContainer.innerHTML = `
+        <div class="weatherBlockContainer">
+             <div class="weatherBlock" id="weatherInfo">
+                   <img class="weatherIcon" src="${getWeatherIconUrl(data.now.icon)}" alt="天气图标">
+             </div>
+                <div class="weatherBlock">
+ <p class="weatherText">${data.now.text}</p>
+        <p class="temperature">${data.now.temp}°C</p>
+      </div>
+        </div>
+
+            <div class="weatherBlockContainer">
+            <div class="weatherBlock" id="weatherInfo">
+             <p class="deta">风速</p>
+        <p class="deta">${data.now.windSpeed}公里/小时</p>
+
+      </div>
+        <div class="weatherBlock">
+        <p class="deta">${data.now.windDir}</p>
+        <p class="deta">${data.now.windScale}级</p>
+  </div>
+        </div>
+
+
+<div class="weatherBlockContainer">
+            <div class="weatherBlock" id="weatherInfo">
+             <p class="deta">相对湿度</p>
+        <p class="deta">${data.now.humidity}%</p>
+      </div>
+        <div class="weatherBlock">
+        <p class="deta">能见度</p>
+        <p class="deta">${data.now.vis}公里</p>
+  </div>
+        </div>
+
+<div class="weatherBlockContainer">
+            <div class="weatherBlock" id="weatherInfo">
+        <p class="deta">降水量</p>
+        <p class="deta">${data.now.precip}毫米</p>
+      </div>
+        <div class="weatherBlock">
+        <p class="deta">大气压强</p>
+        <p class="deta">${data.now.pressure}百帕</p>
+  </div>
+        </div>
+
+<div class="weatherBlockContainer">
+            <div class="weatherBlock" id="weatherInfo">
+        <p class="deta">云量</p>
+        <p class="deta">${data.now.cloud}%</p>
+      </div>
+        <div class="weatherBlock">
+        <p class="deta">露点温度</p>
+        <p class="deta">${data.now.dew}°C</p>
+  </div>
+        </div>
+
+
+            `;
+
+        updateForecastWeather(data.daily);
+
+    }
+
+    function updateForecastWeather(dailyData) {
+        const forecastInfoContainer = document.getElementById('forecastInfo');
+        forecastInfoContainer.innerHTML = '';
+
+        for (let i = 0; i < dailyData.length; i++) {
+            const forecastData = dailyData[i];
+            const forecastDetail = generateForecastDetail(forecastData);
+            forecastInfoContainer.innerHTML += forecastDetail;
+        }
+    }
+
+    function generateForecastDetail(forecastData) {
+        return `
+                <div class="detailItem">
+                    <p class="detailLabel">日期:${forecastData.fxDate}</p>
+                    <p class="detailValue">${forecastData.tempMax}℃ / ${forecastData.tempMin}℃ ${forecastData.textDay}</p>
+                    <p class="detailLabel">日出/日落时间：</p>
+                    <p class="detailLabel">${forecastData.sunrise} / ${forecastData.sunset}</p>
+                    <p class="detailLabel">风向：</p>
+                    <p class="detailLabel">${forecastData.windDirDay}</p>
+                    <p class="detailLabel">风力风速：</p>
+                    <p class="detailLabel">${forecastData.windScaleDay}级|${forecastData.windSpeedDay}公里/小时</p>
+                    <p class="detailLabel">降水：</p>
+                    <p class="detailLabel">${forecastData.precip}mm</p>
+                    <p class="detailLabel">相对湿度：</p>
+                    <p class="detailLabel">${forecastData.humidity}%</p>
+                    <p class="detailLabel">气压：</p>
+                    <p class="detailLabel">${forecastData.pressure}hPa</p>
+                    <p class="detailLabel">能见度：</p>
+                    <p class="detailLabel">${forecastData.vis}公里</p>
+                    <p class="detailLabel">云量：</p>
+                    <p class="detailLabel">${forecastData.cloud}%</p>
+                </div>
+            `;
+    }
+
+    function getWeatherIconUrl(iconCode) {
+        return '/src/main/icons/' + iconCode + '.svg';
+    }
+
+    function handleInput() {
+        const searchInput = document.getElementById('searchInput');
+        const suggestionList = document.getElementById('suggestionList');
+        const searchValue = searchInput.value.trim().toLowerCase();
+
+        fetch(`http://localhost:8080/api/getCityList?city=${encodeURIComponent(searchValue)}`)
+            .then(response => response.json())
+            .then(citySuggestions => {
+                console.log(citySuggestions);
+                suggestionList.innerHTML = '';
+
+                citySuggestions.forEach(city => {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = city.Location_Name_ZH;
+                    listItem.onclick = () => {
+                        handleCitySelection(city);
+                    };
+                    suggestionList.appendChild(listItem);
+                });
+
+                suggestionList.style.display = searchInput === document.activeElement ? 'block' : 'none';
+            })
+            .catch(error => console.error('获取城市建议失败:', error));
+    }
+
+    function handleCitySelection(selectedCity) {
+        console.log('用户选择了城市:', selectedCity.Location_Name_ZH);
+        fetchOtheWeatherData(selectedCity.Location_ID);
+        cityNameElement.innerText = '当前 : ' + selectedCity.Location_Name_ZH;
+        searchInput.value = selectedCity.Location_Name_ZH;
+        suggestionList.style.display = 'none';
+    }
+</script>
+</body>
+
+</html>
