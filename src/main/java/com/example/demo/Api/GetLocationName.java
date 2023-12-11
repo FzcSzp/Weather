@@ -30,7 +30,7 @@ public class GetLocationName {
 
         try {
 
-            String apiUrl = "https://geoapi.qweather.com/v2/city/lookup?location=" + locationString + "&key=16586a8b48d949dfa51376a1ce73b232";
+            String apiUrl = "https://geoapi.qweather.com/v2/city/lookup?location=" + locationString + "&key=xxxxxx";
 
             URL url = new URL(apiUrl);
 

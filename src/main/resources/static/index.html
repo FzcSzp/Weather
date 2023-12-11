@@ -5,20 +5,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>实时天气</title>
+    <!-- 样式定义 -->
     <style>
+        /* 全局样式 */
         body {
             font-family: 'Microsoft YaHei', Arial, sans-serif;
             background-color: #e9eff4;
             margin: 0;
             padding: 20px;
         }
-
+        /* 头部样式 */
         .header-container {
             display: flex;
             align-items: center;
             margin-bottom: 20px;
         }
-
         #cityInfo {
             text-align: match-parent;
             font-size: 50px;
@@ -26,7 +27,6 @@
             margin-right: 100px;
             color: #1976D2;
         }
-
         #searchInput {
             flex-grow: 0.05;
             margin-right: 1000px;
@@ -37,8 +37,8 @@
             border-radius: 5px;
             outline: none;
         }
-
         #suggestionList {
+            /* 搜索建议列表样式 */
             display: block;
             max-height: 200px;
             overflow-y: auto;
@@ -52,18 +52,18 @@
             border-radius: 5px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
-
         #suggestionList li {
+            /* 搜索建议项样式 */
             cursor: pointer;
             padding: 10px;
             margin-bottom: 2px;
             transition: background-color 0.3s ease;
         }
-
         #suggestionList li:hover {
+            /* 鼠标悬停时的样式 */
             background-color: #f0f0f0;
         }
-
+        /* 天气信息容器样式 */
         .weather-container {
             display: flex;
             flex-wrap: wrap;
@@ -71,38 +71,36 @@
             align-items: flex-start;
             margin-bottom: 20px;
         }
-
+        /* 城市信息容器样式 */
         .city-info-container {
             width: 48%;
             box-sizing: border-box;
             color: #000000;
         }
-
+        /* 时间信息容器样式 */
         .time-info-container {
             width: 48%;
             box-sizing: border-box;
             font-size: 14px;
             color: #777;
         }
-
         .updateTime {
             margin-left: 400px;
         }
-
+        /* 天气信息容器样式 */
         #weatherInfoContainer {
             display: flex;
             justify-content: space-between;
             margin-bottom: 20px;
         }
-
         .weatherBlockContainer {
             display: flex;
             justify-content: space-between;
             max-height: 100px;
             margin: 0 0px; /* 添加左右间隙 */
         }
-
         .weatherBlock {
+            /* 天气信息块样式 */
             width: 100%;
             margin-top: 0px;
             background-color: #ffffff;
@@ -112,14 +110,12 @@
             margin: 0 10px; /* 添加左右间隙 */
             max-height: 491px;
         }
-
         .weatherIcon {
             margin-left: 125px;
             width: 80px;
             height: 80px;
-
         }
-
+        /* 天气详情样式 */
         .detailItem {
             display: flex;
             flex-wrap: wrap;
@@ -130,13 +126,12 @@
             border-radius: 10px;
             max-height: 500px;
         }
-
         .detailLabel,
         .detailValue {
             font-weight: bold;
             white-space: nowrap;
         }
-
+        /* 天气预报容器样式 */
         .forecastInfoContainer {
             width: 100%;
             background-color: rgb(164, 162, 168);
@@ -146,23 +141,19 @@
             overflow-y: auto;
             max-height: 470px;
         }
-
         #updateTime {
             /* 其他样式... */
         }
-
         #cityName {
             min-height: 52px;
             /* 其他样式... */
         }
-
         .detailLabel {
             font-weight: bold;
             color: #333;
             flex-basis: 40%;
             margin-bottom: 10px;
         }
-
         .detailValue {
             color: #666;
             flex-basis: 40%;
@@ -172,36 +163,41 @@
 </head>
 
 <body>
+<!-- 页面主体 -->
 <div class="header-container">
+    <!-- 搜索输入框和城市信息显示 -->
     <input type="text" id="searchInput" placeholder="输入城市名" oninput="handleInput()">
     <div id="cityInfo">天气预报</div>
 </div>
+<!-- 搜索建议列表 -->
 <ul id="suggestionList"></ul>
 
+<!-- 天气信息展示容器 -->
 <div class="weather-container">
     <!-- 子容器1：包含 #cityInfo 和 #cityName -->
     <div class="city-info-container">
-
         <div id="cityName"></div>
         <div class="weatherBlock" id="weatherInfo"></div>
     </div>
 
     <!-- 子容器2：包含 #updateTime、#weatherInfoContainer 和 #forecastInfo -->
     <div class="time-info-container">
-
         <p class="updateTime" id="updateTime"></p>
         <div id="weatherInfoContainer">
-
             <div class="forecastInfoContainer" id="forecastInfo"></div>
         </div>
     </div>
 </div>
 
+<!-- JavaScript 脚本 -->
 <script>
+    // 页面加载完成后执行
     document.addEventListener("DOMContentLoaded", function () {
+        // 获取用户位置信息
         navigator.geolocation.getCurrentPosition(successCallback, errorCallback);
     });
 
+    // 获取位置信息成功的回调函数
     const cityNameElement = document.getElementById('cityName');
     function successCallback(position) {
         const latitude = position.coords.latitude;
@@ -211,11 +207,13 @@
         fetchLocalityWeatherData(latitude, longitude);
     }
 
+    // 获取位置信息失败的回调函数
     function errorCallback(error) {
         console.log("无法定位，默认北京天气", error.message);
         fetchLocalityWeatherData(39.904987, 116.405289);
     }
 
+    // 获取本地天气数据
     function fetchLocalityWeatherData(latitude, longitude) {
         fetch('http://localhost:8080/api/locality', {
             headers: {
@@ -232,6 +230,7 @@
             .catch(error => console.error('获取天气数据失败:', error));
     }
 
+    // 获取其他城市天气数据
     function fetchOtheWeatherData(Location_ID) {
         fetch('http://localhost:8080/api/othen', {
             headers: {
@@ -242,12 +241,11 @@
             .then(response => response.json())
             .then(data => {
                 updateWeatherInfo(data);
-
-
             })
             .catch(error => console.error('获取天气数据失败:', error));
     }
 
+    // 更新天气信息显示
     function updateWeatherInfo(data) {
         var weatherInfoContainer = document.getElementById('weatherInfo');
         var updateTimeElement = document.getElementById('updateTime');
@@ -255,69 +253,66 @@
         updateTimeElement.innerText = '最近更新时间：' + data.now.obsTime;
 
         weatherInfoContainer.innerHTML = `
-        <div class="weatherBlockContainer">
-             <div class="weatherBlock" id="weatherInfo">
-                   <img class="weatherIcon" src="${getWeatherIconUrl(data.now.icon)}" alt="天气图标">
-             </div>
-                <div class="weatherBlock">
- <p class="weatherText">${data.now.text}</p>
-        <p class="temperature">${data.now.temp}°C</p>
-      </div>
-        </div>
-
             <div class="weatherBlockContainer">
-            <div class="weatherBlock" id="weatherInfo">
-             <p class="deta">风速</p>
-        <p class="deta">${data.now.windSpeed}公里/小时</p>
+                 <div class="weatherBlock" id="weatherInfo">
+                       <img class="weatherIcon" src="${getWeatherIconUrl(data.now.icon)}" alt="天气图标">
+                 </div>
+                    <div class="weatherBlock">
+     <p class="weatherText">${data.now.text}</p>
+            <p class="temperature">${data.now.temp}°C</p>
+          </div>
+            </div>
 
+                <div class="weatherBlockContainer">
+                <div class="weatherBlock" id="weatherInfo">
+                 <p class="deta">风速</p>
+            <p class="deta">${data.now.windSpeed}公里/小时</p>
+
+          </div>
+            <div class="weatherBlock">
+            <p class="deta">${data.now.windDir}</p>
+            <p class="deta">${data.now.windScale}级</p>
       </div>
-        <div class="weatherBlock">
-        <p class="deta">${data.now.windDir}</p>
-        <p class="deta">${data.now.windScale}级</p>
-  </div>
-        </div>
+            </div>
 
-
-<div class="weatherBlockContainer">
-            <div class="weatherBlock" id="weatherInfo">
-             <p class="deta">相对湿度</p>
-        <p class="deta">${data.now.humidity}%</p>
+    <div class="weatherBlockContainer">
+                <div class="weatherBlock" id="weatherInfo">
+                 <p class="deta">相对湿度</p>
+            <p class="deta">${data.now.humidity}%</p>
+          </div>
+            <div class="weatherBlock">
+            <p class="deta">能见度</p>
+            <p class="deta">${data.now.vis}公里</p>
       </div>
-        <div class="weatherBlock">
-        <p class="deta">能见度</p>
-        <p class="deta">${data.now.vis}公里</p>
-  </div>
-        </div>
+            </div>
 
-<div class="weatherBlockContainer">
-            <div class="weatherBlock" id="weatherInfo">
-        <p class="deta">降水量</p>
-        <p class="deta">${data.now.precip}毫米</p>
+    <div class="weatherBlockContainer">
+                <div class="weatherBlock" id="weatherInfo">
+            <p class="deta">降水量</p>
+            <p class="deta">${data.now.precip}毫米</p>
+          </div>
+            <div class="weatherBlock">
+            <p class="deta">大气压强</p>
+            <p class="deta">${data.now.pressure}百帕</p>
       </div>
-        <div class="weatherBlock">
-        <p class="deta">大气压强</p>
-        <p class="deta">${data.now.pressure}百帕</p>
-  </div>
-        </div>
+            </div>
 
-<div class="weatherBlockContainer">
-            <div class="weatherBlock" id="weatherInfo">
-        <p class="deta">云量</p>
-        <p class="deta">${data.now.cloud}%</p>
+    <div class="weatherBlockContainer">
+                <div class="weatherBlock" id="weatherInfo">
+            <p class="deta">云量</p>
+            <p class="deta">${data.now.cloud}%</p>
+          </div>
+            <div class="weatherBlock">
+            <p class="deta">露点温度</p>
+            <p class="deta">${data.now.dew}°C</p>
       </div>
-        <div class="weatherBlock">
-        <p class="deta">露点温度</p>
-        <p class="deta">${data.now.dew}°C</p>
-  </div>
-        </div>
-
-
-            `;
+            </div>
+                `;
 
         updateForecastWeather(data.daily);
-
     }
 
+    // 更新天气预报信息
     function updateForecastWeather(dailyData) {
         const forecastInfoContainer = document.getElementById('forecastInfo');
         forecastInfoContainer.innerHTML = '';
@@ -329,35 +324,38 @@
         }
     }
 
+    // 生成天气预报详细信息
     function generateForecastDetail(forecastData) {
         return `
-                <div class="detailItem">
-                    <p class="detailLabel">日期:${forecastData.fxDate}</p>
-                    <p class="detailValue">${forecastData.tempMax}℃ / ${forecastData.tempMin}℃ ${forecastData.textDay}</p>
-                    <p class="detailLabel">日出/日落时间：</p>
-                    <p class="detailLabel">${forecastData.sunrise} / ${forecastData.sunset}</p>
-                    <p class="detailLabel">风向：</p>
-                    <p class="detailLabel">${forecastData.windDirDay}</p>
-                    <p class="detailLabel">风力风速：</p>
-                    <p class="detailLabel">${forecastData.windScaleDay}级|${forecastData.windSpeedDay}公里/小时</p>
-                    <p class="detailLabel">降水：</p>
-                    <p class="detailLabel">${forecastData.precip}mm</p>
-                    <p class="detailLabel">相对湿度：</p>
-                    <p class="detailLabel">${forecastData.humidity}%</p>
-                    <p class="detailLabel">气压：</p>
-                    <p class="detailLabel">${forecastData.pressure}hPa</p>
-                    <p class="detailLabel">能见度：</p>
-                    <p class="detailLabel">${forecastData.vis}公里</p>
-                    <p class="detailLabel">云量：</p>
-                    <p class="detailLabel">${forecastData.cloud}%</p>
-                </div>
-            `;
+                    <div class="detailItem">
+                        <p class="detailLabel">日期:${forecastData.fxDate}</p>
+                        <p class="detailValue">${forecastData.tempMax}℃ / ${forecastData.tempMin}℃ ${forecastData.textDay}</p>
+                        <p class="detailLabel">日出/日落时间：</p>
+                        <p class="detailLabel">${forecastData.sunrise} / ${forecastData.sunset}</p>
+                        <p class="detailLabel">风向：</p>
+                        <p class="detailLabel">${forecastData.windDirDay}</p>
+                        <p class="detailLabel">风力风速：</p>
+                        <p class="detailLabel">${forecastData.windScaleDay}级|${forecastData.windSpeedDay}公里/小时</p>
+                        <p class="detailLabel">降水：</p>
+                        <p class="detailLabel">${forecastData.precip}mm</p>
+                        <p class="detailLabel">相对湿度：</p>
+                        <p class="detailLabel">${forecastData.humidity}%</p>
+                        <p class="detailLabel">气压：</p>
+                        <p class="detailLabel">${forecastData.pressure}hPa</p>
+                        <p class="detailLabel">能见度：</p>
+                        <p class="detailLabel">${forecastData.vis}公里</p>
+                        <p class="detailLabel">云量：</p>
+                        <p class="detailLabel">${forecastData.cloud}%</p>
+                    </div>
+                `;
     }
 
+    // 获取天气图标 URL
     function getWeatherIconUrl(iconCode) {
         return '/src/main/icons/' + iconCode + '.svg';
     }
 
+    // 处理用户输入
     function handleInput() {
         const searchInput = document.getElementById('searchInput');
         const suggestionList = document.getElementById('suggestionList');

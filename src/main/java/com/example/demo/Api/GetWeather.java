@@ -22,7 +22,7 @@ public class GetWeather {
         StringBuilder response = null;
         try {
 
-            String apiUrl = "https://devapi.qweather.com/v7/weather/now?location=" + locationString + "&key=16586a8b48d949dfa51376a1ce73b232";
+            String apiUrl = "https://devapi.qweather.com/v7/weather/now?location=" + locationString + "&key=xxxxxxx";
 
             URL url = new URL(apiUrl);
 
@@ -81,7 +81,7 @@ public class GetWeather {
         StringBuilder response = null;
         try {
 
-            String apiUrl = "https://devapi.qweather.com/v7/weather/7d?location=" + locationString + "&key=16586a8b48d949dfa51376a1ce73b232";
+            String apiUrl = "https://devapi.qweather.com/v7/weather/7d?location=" + locationString + "&key=xxxxxx";
 
             URL url = new URL(apiUrl);
 
@@ -163,17 +163,28 @@ public class GetWeather {
 
         try {
             ObjectMapper objectMapper = new ObjectMapper();
+
             JsonNode nowNode = objectMapper.readTree(Now);
+
             JsonNode dailyNode = objectMapper.readTree(Daily);
+
             ObjectNode combinedNode = objectMapper.createObjectNode();
+
             combinedNode.setAll((ObjectNode) nowNode);
+
             combinedNode.set("daily", dailyNode.get("daily"));
+
             combinedNode.put("cityName", String.valueOf(cityName));
+
             System.out.println(objectMapper.writeValueAsString(combinedNode));
+
             return objectMapper.writeValueAsString(combinedNode);
+
         } catch (JsonProcessingException e) {
+
             e.printStackTrace();
-            return "{\"error\":\"处理 JSON 数据时发生错误\"}";
+
+            return "{\"error\":\"错误\"}";
         }
 
     }
@@ -182,25 +193,33 @@ public class GetWeather {
     public String getOthenWeather(@RequestHeader("Location_ID") String Location_ID) {
 
         String  Now = getNowWeather(Location_ID);
+
         String  Daily = getDailyWeather(Location_ID);
+
         try {
 
             ObjectMapper objectMapper = new ObjectMapper();
+
             JsonNode nowNode = objectMapper.readTree(Now);
+
             JsonNode dailyNode = objectMapper.readTree(Daily);
 
-
             ObjectNode combinedNode = objectMapper.createObjectNode();
+
             combinedNode.setAll((ObjectNode) nowNode);
+
             combinedNode.set("daily", dailyNode.get("daily"));
 
             System.out.println(objectMapper.writeValueAsString(combinedNode));
-            return objectMapper.writeValueAsString(combinedNode);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            return "{\"error\":\"处理 JSON 数据时发生错误\"}";
-        }
 
+            return objectMapper.writeValueAsString(combinedNode);
+
+        } catch (JsonProcessingException e) {
+
+            e.printStackTrace();
+
+            return "{\"error\":\"错误\"}";
+        }
     }
     }
 
